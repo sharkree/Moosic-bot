@@ -6,16 +6,20 @@ import com.sedmelluq.discord.lavaplayer.track.playback.NonAllocatingAudioFrameBu
 import discord4j.core.object.VoiceState;
 import discord4j.core.object.entity.Member;
 import discord4j.voice.AudioProvider;
+import discord4j.voice.VoiceConnection;
 import reactor.core.publisher.Mono;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
 public class CommandIniter {
     private AudioPlayerManager playerManager;
     private AudioPlayer player;
     private TrackScheduler scheduler;
-    AudioProvider provider;
+    private AudioProvider provider;
+    private List<String> queue;
 
     public CommandIniter() {
         playerManager = new DefaultAudioPlayerManager();
@@ -26,6 +30,8 @@ public class CommandIniter {
         provider = new LavaPlayerAudioProvider(player);
         scheduler = new TrackScheduler(player);
         playerManager.setItemLoaderThreadPoolSize(5);
+
+        queue = new ArrayList<>();
     }
 
     public HashMap<String, Command> initBasicCommands() {
@@ -58,7 +64,7 @@ public class CommandIniter {
                 .flatMap(Member::getVoiceState)
                 .flatMap(VoiceState::getChannel)
                 .flatMap(channel -> channel.join(spec -> spec.setProvider(provider)))
-                .flatMap(connection -> connection.disconnect())
+                .flatMap(VoiceConnection::disconnect)
                 .then());
 
         return commands;
