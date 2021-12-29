@@ -5,10 +5,13 @@ import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
 import com.sedmelluq.discord.lavaplayer.track.playback.NonAllocatingAudioFrameBuffer;
 import discord4j.core.object.VoiceState;
 import discord4j.core.object.entity.Member;
+import discord4j.core.object.entity.Message;
+import discord4j.core.spec.EmbedCreateSpec;
 import discord4j.voice.AudioProvider;
 import discord4j.voice.VoiceConnection;
 import reactor.core.publisher.Mono;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -20,6 +23,9 @@ public class CommandIniter {
     private TrackScheduler scheduler;
     private AudioProvider provider;
     private List<String> queue;
+
+    private static String KEK_URL = "https://cdn.betterttv.net/emote/5aca62163e290877a25481ad/3x";
+    private static String RICKROLL_URL = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
 
     public CommandIniter() {
         playerManager = new DefaultAudioPlayerManager();
@@ -38,7 +44,23 @@ public class CommandIniter {
         HashMap<String, Command> commands = new HashMap<>();
 
         commands.put("ping", event -> event.getMessage().getChannel()
-                .flatMap(channel -> channel.createMessage("Pong!"))
+                .flatMap(channel -> channel.createMessage(":ping_pong: Pong! " + (Instant.now().toEpochMilli() - event.getMessage().getTimestamp().toEpochMilli()) + "ms"))
+                .then());
+
+        commands.put("help", event -> event.getMessage().getChannel()
+                .flatMap(channel -> channel.createMessage(EmbedCreateSpec.builder()
+                        .author("Urban Lamp V2", RICKROLL_URL, KEK_URL)
+                        .title("!Help")
+                        .url(RICKROLL_URL)
+                        .description("bot isn't done yet,\nso please don't call this command\n lmao")
+                        .addField("deez nuts", "there is no help", true)
+                        .footer("!help", KEK_URL)
+                        .timestamp(Instant.now())
+                        .build()))
+                .then());
+
+        commands.put("uwu", event -> event.getMessage().getChannel()
+                .flatMap(channel -> channel.createMessage("you have joined the uwu cult. dm chry#7543 for more details"))
                 .then());
 
         return commands;
