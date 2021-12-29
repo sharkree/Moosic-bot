@@ -8,12 +8,14 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
 
-public class Bot {
+public class Runner {
     private static Map<String, Command> commands = new HashMap<>();
 
     public static void main(String[] args) throws IOException  {
+        // TODO: make bot prefix configurable?
         final String BOT_PREFIX = "!";
-        final String TOKEN = (new BufferedReader(new FileReader("token.txt"))).readLine();
+        // TODO: y isn't this global lmao
+        final String TOKEN = (new BufferedReader(new FileReader("token.txt"))).readLine(); // please java shut up
 
         CommandIniter initer = new CommandIniter();
         commands.putAll(initer.initBasicCommands());
@@ -23,6 +25,7 @@ public class Bot {
                 .login()
                 .block();
 
+        // pls Intellij nobody cares about a null reference if they already made it
         assert client != null;
         client.getEventDispatcher().on(MessageCreateEvent.class)
                 .flatMap(event -> Mono.just(event.getMessage().getContent())
