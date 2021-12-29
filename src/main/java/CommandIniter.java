@@ -12,7 +12,21 @@ import java.util.Arrays;
 import java.util.HashMap;
 
 public class CommandIniter {
-    public CommandIniter() {}
+    private AudioPlayerManager playerManager;
+    private AudioPlayer player;
+    private TrackScheduler scheduler;
+    AudioProvider provider;
+
+    public CommandIniter() {
+        playerManager = new DefaultAudioPlayerManager();
+        playerManager.getConfiguration()
+                .setFrameBufferFactory(NonAllocatingAudioFrameBuffer::new);
+        AudioSourceManagers.registerRemoteSources(playerManager);
+        player = playerManager.createPlayer();
+        provider = new LavaPlayerAudioProvider(player);
+        scheduler = new TrackScheduler(player);
+        playerManager.setItemLoaderThreadPoolSize(5);
+    }
 
     public HashMap<String, Command> initBasicCommands() {
         HashMap<String, Command> commands = new HashMap<>();
@@ -26,12 +40,6 @@ public class CommandIniter {
 
     public HashMap<String, Command> initAudioCommands() {
         HashMap<String, Command> commands = new HashMap<>();
-        final AudioPlayerManager playerManager = new DefaultAudioPlayerManager();
-        playerManager.getConfiguration()
-                .setFrameBufferFactory(NonAllocatingAudioFrameBuffer::new);
-        AudioSourceManagers.registerRemoteSources(playerManager);
-        final AudioPlayer player = playerManager.createPlayer();
-        AudioProvider provider = new LavaPlayerAudioProvider(player);
 
         commands.put("join", event -> Mono.justOrEmpty(event.getMember())
                 .flatMap(Member::getVoiceState)
@@ -41,10 +49,16 @@ public class CommandIniter {
                 .flatMap(channel -> channel.join(spec -> spec.setProvider(provider)))
                 .then());
 
-        final TrackScheduler scheduler = new TrackScheduler(player);
         commands.put("play", event -> Mono.justOrEmpty(event.getMessage().getContent())
                 .map(content -> Arrays.asList(content.split(" ")))
                 .doOnNext(command -> playerManager.loadItem(command.get(1), scheduler))
+                .then());
+
+        commands.put("leave", event -> Mono.justOrEmpty(event.getMember())
+                .flatMap(Member::getVoiceState)
+                .flatMap(VoiceState::getChannel)
+                .flatMap(channel -> channel.join(spec -> spec.setProvider(provider)))
+                .flatMap(connection -> connection.disconnect())
                 .then());
 
         return commands;
