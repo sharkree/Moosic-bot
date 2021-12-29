@@ -53,7 +53,7 @@ public class CommandIniter {
                 .then());
 
         commands.put("uwu", event -> event.getMessage().getChannel()
-                .flatMap(channel -> channel.createMessage("you have joined the uwu cult. dm chry#7543 for more details"))
+                .flatMap(channel -> channel.createMessage("you have joined the uwu cult. dm chry for more details"))
                 .then());
 
         return commands;
