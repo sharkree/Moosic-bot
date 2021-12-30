@@ -1,13 +1,17 @@
 import com.sedmelluq.discord.lavaplayer.player.*;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
+import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.playback.NonAllocatingAudioFrameBuffer;
 import discord4j.common.util.Snowflake;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.VoiceState;
 import discord4j.core.object.entity.Member;
+import discord4j.core.object.entity.channel.Channel;
+import discord4j.core.object.entity.channel.VoiceChannel;
 import discord4j.core.object.reaction.ReactionEmoji;
 import discord4j.core.spec.EmbedCreateSpec;
 import discord4j.voice.*;
+import org.checkerframework.checker.units.qual.C;
 import reactor.core.publisher.Mono;
 import java.time.Instant;
 import java.util.*;
@@ -17,7 +21,7 @@ public class CommandIniter {
     private AudioPlayer player;
     private TrackScheduler scheduler;
     private AudioProvider provider;
-    private List<String> queue;
+    private AudioTrack track;
 
     // remember to not click on these(they will be replaced when an actual bot exists but right now it's sitting in my intellij projects folder)
     private static String PEPEGA_URL = "https://cdn.betterttv.net/emote/5aca62163e290877a25481ad/3x";
@@ -32,8 +36,6 @@ public class CommandIniter {
         provider = new LavaPlayerAudioProvider(player);
         scheduler = new TrackScheduler(player);
         playerManager.setItemLoaderThreadPoolSize(5);
-
-        queue = new ArrayList<>();
     }
 
     public HashMap<String, Command> initBasicCommands() {
@@ -113,8 +115,6 @@ public class CommandIniter {
         commands.put("leave", event -> Mono.justOrEmpty(event.getMember())
                 .flatMap(Member::getVoiceState)
                 .flatMap(VoiceState::getChannel)
-                // monke stuff since I messed up on the join command
-                // joining and leaving too good
                 .flatMap(channel -> channel.join(spec -> spec.setProvider(provider)))
                 .flatMap(VoiceConnection::disconnect)
                 .then());

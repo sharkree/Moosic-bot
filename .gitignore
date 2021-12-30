@@ -2,3 +2,4 @@ pom.xml
 .idea/
 target/
 token.txt
+src/main/java/testing/
