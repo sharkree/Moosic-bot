@@ -5,6 +5,7 @@ import discord4j.common.util.Snowflake;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.VoiceState;
 import discord4j.core.object.entity.Member;
+import discord4j.core.object.reaction.ReactionEmoji;
 import discord4j.core.spec.EmbedCreateSpec;
 import discord4j.voice.*;
 import reactor.core.publisher.Mono;
@@ -39,7 +40,7 @@ public class CommandIniter {
         HashMap<String, Command> commands = new HashMap<>();
 
         commands.put("ping", event -> event.getMessage().getChannel()
-                .flatMap(channel -> channel.createMessage(":ping_pong: Pong! " + (Instant.now().toEpochMilli() - event.getMessage().getTimestamp().toEpochMilli()) + "ms"))
+                .flatMap(channel -> channel.createMessage(":ping_pong: **Pong!** " + (Instant.now().toEpochMilli() - event.getMessage().getTimestamp().toEpochMilli()) + "ms"))
                 .then());
 
         commands.put("help", event -> event.getMessage().getChannel()
