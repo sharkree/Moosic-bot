@@ -1,6 +1,8 @@
 import com.sedmelluq.discord.lavaplayer.player.*;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
 import com.sedmelluq.discord.lavaplayer.track.playback.NonAllocatingAudioFrameBuffer;
+import discord4j.common.util.Snowflake;
+import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.VoiceState;
 import discord4j.core.object.entity.Member;
 import discord4j.core.spec.EmbedCreateSpec;
@@ -17,7 +19,7 @@ public class CommandIniter {
     private List<String> queue;
 
     // remember to not click on these(they will be replaced when an actual bot exists but right now it's sitting in my intellij projects folder)
-    private static String KEK_URL = "https://cdn.betterttv.net/emote/5aca62163e290877a25481ad/3x";
+    private static String PEPEGA_URL = "https://cdn.betterttv.net/emote/5aca62163e290877a25481ad/3x";
     private static String RICKROLL_URL = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
 
     public CommandIniter() {
@@ -42,18 +44,50 @@ public class CommandIniter {
 
         commands.put("help", event -> event.getMessage().getChannel()
                 .flatMap(channel -> channel.createMessage(EmbedCreateSpec.builder()
-                        .author("Urban Lamp V2", RICKROLL_URL, KEK_URL)
-                        .title("!Help")
+                        .author("Urban Lamp V2", RICKROLL_URL, PEPEGA_URL)
+                        .title("Help! What are the commands again?")
                         .url(RICKROLL_URL)
-                        .description("bot isn't done yet,\nso please don't call this command\n lmao")
-                        .addField("deez nuts", "there is no help", true)
-                        .footer("!help", KEK_URL)
+                        .description("**IMPORTANT: The bot is in development, so please try to break it!(but don't ban admins/itself)**\n__**Command List:**__")
+                        .addField("--Generic Commands--", ".", false)
+                        .addField("!help", "The help command(how don't you know, you literally just did this!", false)
+                        .addField("!ping", "returns latency of the bot", false)
+                        .addField("--Music Commands--", ".", false)
+                        .addField("!join", "Gets the bot to join a VC that you're in", false)
+                        .addField("!play", "Gets the bot to play a youtube link", false)
+                        .addField("!leave", "Tells the bot to leave the VC(since auto-leaving doesn't work", false)
+                        .addField("--Moderation Commands--", ".", false)
+                        .addField("!kick", "Kicks the pinged user", false)
+                        .addField("!ban", "Bans the pinged user", false)
+                        .addField("!unban", "Unbans the user(takes in the user's id, **important**", false)
+                        .footer("!help called!", PEPEGA_URL)
                         .timestamp(Instant.now())
                         .build()))
                 .then());
 
-        commands.put("uwu", event -> event.getMessage().getChannel()
-                .flatMap(channel -> channel.createMessage("you have joined the uwu cult. dm chry for more details"))
+        return commands;
+    }
+
+    public HashMap<String, Command> initModerationCommands() {
+        HashMap<String, Command> commands = new HashMap<>();
+
+        // surely the users will actually ban someone...
+        commands.put("kick", event -> Objects.requireNonNull(event.getGuild()
+                        .block())
+                .kick(event.getMessage().getUserMentionIds().get(0))
+                .then());
+
+        commands.put("ban", event -> Objects.requireNonNull(event.getGuild()
+                        .block())
+                .ban(event.getMessage().getUserMentionIds().get(0))
+                .then());
+
+        commands.put("unban", event -> Objects.requireNonNull(event.getGuild()
+                                .block())
+                        .unban(Snowflake.of(Arrays.asList(event
+                                        .getMessage()
+                                        .getContent()
+                                        .split(" "))
+                                .get(1)))
                 .then());
 
         return commands;

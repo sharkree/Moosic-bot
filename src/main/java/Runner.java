@@ -20,6 +20,7 @@ public class Runner {
         CommandIniter initer = new CommandIniter();
         commands.putAll(initer.initBasicCommands());
         commands.putAll(initer.initAudioCommands());
+        commands.putAll(initer.initModerationCommands());
 
         final GatewayDiscordClient client = DiscordClientBuilder.create(TOKEN).build()
                 .login()
