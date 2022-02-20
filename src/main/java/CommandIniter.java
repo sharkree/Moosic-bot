@@ -6,6 +6,7 @@ import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.VoiceState;
 import discord4j.core.object.audit.AuditLogEntry;
 import discord4j.core.object.audit.AuditLogPart;
+import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.Member;
 import discord4j.core.spec.AuditLogQueryFlux;
 import discord4j.core.spec.EmbedCreateSpec;
@@ -72,24 +73,66 @@ public class CommandIniter {
         HashMap<String, Command> commands = new HashMap<>();
 
         // surely the users will actually ban someone...
-        commands.put("kick", event -> Objects.requireNonNull(event.getGuild()
-                        .block())
-                .kick(event.getMessage().getUserMentionIds().get(0))
-                .then());
+        commands.put("kick", event -> {
+            Guild guild = event.getGuild().block();
+            try {
+                assert guild != null;
+                String msg = Arrays.asList(event.getMessage().getContent().split(" ")).get(1);
+                assert msg != null;
+                guild.kick(event.getMessage().getUserMentionIds().get(0), msg);
+            } catch (Exception e) {
+                Objects.requireNonNull(event.getMessage().getChannel().block()).createMessage(
+                        EmbedCreateSpec.builder()
+                                .title("Kick Unavailable")
+                                .addField("", "Ban unavailable due to reason: " + e.getMessage(), false)
+                                .timestamp(Instant.now())
+                                .build());
+            }
 
-        commands.put("ban", event -> Objects.requireNonNull(event.getGuild()
-                        .block())
-                .ban(event.getMessage().getUserMentionIds().get(0))
-                .then());
+            return null;
+        });
 
-        commands.put("unban", event -> Objects.requireNonNull(event.getGuild()
-                                .block())
-                        .unban(Snowflake.of(Arrays.asList(event
-                                        .getMessage()
-                                        .getContent()
-                                        .split(" "))
-                                .get(1)))
-                .then());
+        commands.put("ban", event -> {
+            Guild guild = event.getGuild().block();
+            try {
+                assert guild != null;
+                guild.ban(event.getMessage().getUserMentionIds().get(0));
+            } catch (Exception e) {
+                Objects.requireNonNull(event.getMessage().getChannel().block()).createMessage(
+                        EmbedCreateSpec.builder()
+                                .title("Ban Unavailable")
+                                .addField("", "Ban unavailable due to reason: " + e.getMessage(), false)
+                                .timestamp(Instant.now())
+                                .build());
+            }
+
+            return null;
+        });
+
+        commands.put("unban", new Command() {
+            @Override
+            public Mono<Void> execute(MessageCreateEvent event) {
+                Guild guild = event.getGuild().block();
+                assert guild != null;
+                try {
+                    guild.unban(Snowflake.of(Arrays.asList(event
+                                            .getMessage()
+                                            .getContent()
+                                            .split(" "))
+                                    .get(1)))
+                            .then();
+                } catch (Exception e) {
+                    Objects.requireNonNull(event.getMessage().getChannel().block()).createMessage(
+                            EmbedCreateSpec.builder()
+                                    .title("Unban Unavailable")
+                                    .addField("", "Could not find user id", false)
+                                    .timestamp(Instant.now())
+                                    .build());
+                }
+
+                return null;
+            }
+        });
 
         return commands;
     }
